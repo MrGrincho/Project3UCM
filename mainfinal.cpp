@@ -3,6 +3,15 @@
 #include <fstream>
 using namespace std;
 #include <string>
+#include <cstdlib>
+//WINDOWS//////////////
+//#include <Windows.h//	
+///////////////////////
+//LINUX////////////////
+//#include <conio.h>///
+//#include <ncurses.h>//
+///////////////////////
+
 
 //PROGRAM DATA
 typedef enum {Free, Wall, GoalFree, GoalBox,
@@ -30,18 +39,19 @@ typedef struct{
 
 typedef enum{Up, Down, Right, Left, Exit, Nothing} tKey;
 
-//BOARD DISPLAY ///////////////////////////////////////////
+//BOARD DISPLAY 
 void display(tSokoban board, tGame game); //You first clean
-   void drawTitle(tTile title); //Title in the board
+   void drawTile(tTile tile); //Title in the board
+   		//WINDOWS void backgroundColor(int color); //WINDOWS
    void draw(const tGame &game); //Display board, file name, level, movements.
 
-//LOADING GAME LEVELS ///////////////////////////////////////////
+//LOADING GAME LEVELS 
 void init(tGame &game); //MAX x MAX tiles to free, movements zero
  bool loadGame(tGame &game); //Ask file name and level, loads it
  bool loadLevel(ifstream &file, tSokoban &sokoban, int level);
 //Searches choosen level in file, and loads board. True if found.
 
-//READING FROM THE GAME///////////////////////////////////////////
+//READING FROM THE GAME
 tKey readKey(); //returns tKey value (4 possibilities + Exit(Esc) + Nothing(Other))
 void applyMove(tGame &game, tKey key); //If possible, after key.
 
@@ -59,11 +69,17 @@ int main(){
 		 cout << "See you!" << endl;
 		break;
 		case 1: //Play match
+			/// WINDOWS //////////////////////////
+			// backgroundColor(15);
 			init(game);
 			loadGame(game);
+			display(game.state,game);
+			while(readKey() != Exit){
+				applyMove(game, key);
 
 
-
+				readkey();
+			}
 			option = menu();
 		break;
 		}
@@ -83,12 +99,33 @@ int menu(){
 	return option;
 }
 
-//BOARD DISPLAY ///////////////////////////////////////////
-void display(tSokoban board, tGame game); //You first clean
-   void drawTitle(tTile title); //Title in the board
-   void draw(const tGame &game); //Display board, file name, level, movements.
+//BOARD DISPLAY 
+void display(tSokoban board, tGame game){
+  #ifdef WINDOWS
+     system("cls");
+  #else
+     // Assume POSIX
+     system("clear");
+  #endif
+}   
 
-//LOADING GAME LEVELS ///////////////////////////////////////////
+void drawTile(tTile tile){
+	/// WINDOWS //////////////////////////
+	// backgroundColor(15);
+
+
+
+   void draw(const tGame &game); //Display board, file name, level, movements.
+}
+
+/*
+void backgroundColor(int color) {
+	HANDLE handle = GetStdHandle(STD_OUTPUT_HANDLE);
+	SetConsoleTextAttribute(handle, 15 | (color << 4));
+}
+*///////////// WINDOWS //////////////////////////////////////
+
+//LOADING GAME LEVELS 
 void init(tGame &game){
 	game.numVos = 0;
 	game.state.ncolumns = game.state.nrows = 0;
@@ -118,7 +155,7 @@ bool loadGame(tGame &game){
       cout << "What level you desire?" << endl;
       cout << "Level: ";
       cin >> level;
-   } while(level < 0);
+      } while(level < 0);
 
    ifstream file;
    file.open(fileName.c_str());
@@ -132,7 +169,7 @@ bool loadGame(tGame &game){
      }
 }
 
- bool loadLevel(ifstream &file, tSokoban &sokoban, int level){
+bool loadLevel(ifstream &file, tSokoban &sokoban, int level){
  	string word;
  	int levelG, player;
  	bool found, end; 
@@ -140,7 +177,7 @@ bool loadGame(tGame &game){
  	char cell;
  	player = 0;
  	if(file.is_open()){
- 	do{
+ 	 do{
  		do{
  			file >> word;
          } while (word != "Level");
@@ -157,6 +194,8 @@ bool loadGame(tGame &game){
     			case '#':
     				sokoban.board[l][c] = Wall;
     				sokoban.ncolumns ++;
+    				/// WINDOWS //////////////////////////
+					// backgroundColor(0);
     			break;
     			case ' ':
     				sokoban.board[l][c] = Free;
@@ -166,6 +205,7 @@ bool loadGame(tGame &game){
     			break;
     			case '$':
     				sokoban.board[l][c] = Box;
+    				sokoban.boxesCounter++;
     			break;
     			case '@':
     				sokoban.board[l][c] = Player;
@@ -177,6 +217,7 @@ bool loadGame(tGame &game){
     			break;
     			case '*':
     				sokoban.board[l][c] = GoalBox;
+    				sokoban.boxesPlaced++;
     			break;
     			case '+':
     				sokoban.board[l][c] = GoalPlayer;
@@ -188,7 +229,7 @@ bool loadGame(tGame &game){
     		}
     	}
     }
-  }
+}
 
 return ((file.is_open()) && !(end));
 }	
